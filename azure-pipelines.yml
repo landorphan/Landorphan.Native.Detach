@@ -46,7 +46,7 @@ jobs:
     - script: mv ./cmake-build-linux-release/detach ./cmake-build-linux-release/linux-detach
       displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
-      displayName: Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)
+      displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
