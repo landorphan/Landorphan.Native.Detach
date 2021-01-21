@@ -6,11 +6,49 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'macOS-latest'
-#  vmImage: 'ubuntu-latest'
+variables:
+  NUGET_AUTHORS: 'Landorphan LLC, Michael Prochaska, Timothy Stockstill'
+  NUGET_OWNERS: 'landorphan, mprochaska, tstockstill'
+  NUGET_LICENSE: 'MIT'
+  NUGET_COPYRIGHT: 'Copyright © 2019 - Landorphan, LLC.'
 
-steps:
-- script: cmake
-  displayName: 'Run a one-line script'
+jobs:
+- job: macos_build
+  displayName: MacOS Build
+  dependsOn: []
+  pool:
+    vmImage: 'macOS-latest'
+  setps:
+    - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
+      displayName: Generate Make Files
+    - script: cmake --build cmake-build-macos-release --target all
+      displayName: Build Project
+    - script: mv ./cmake-build-macos-release/detach ./cmake-build-macos-release/macos-detach
+      displayName: Rename detach to OS Specific name
+    - task: CopyFiles@2
+      displayName: Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'macos'
+        publishLocation: 'Container'
 
+- job: linux_build
+  displayName: Linux Build
+  dependsOn: []
+  pool:
+    vmImage: 'ubuntu-16.04'
+  setps: 
+    - script: cmake -Bcmake-build-linux-release -H. -DCMAKE_BUILD_TYPE=release
+      displayName: Generate Make Files
+    - script: cmake --build cmake-build-linux-release --target all
+      displayName: Build Project
+    - script: mv ./cmake-build-linux-release/detach ./cmake-build-linux-release/linux-detach
+      displayName: Rename detach to OS Specific name
+    - task: CopyFiles@2
+      displayName: Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'linux'
+        publishLocation: 'Container'
