@@ -27,6 +27,10 @@ jobs:
       displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(system.defaultworkingdirectory)'
+        Contents: '$(Build.SourcesDirectory)\cmake-build-macos-release/macos-detach'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -47,6 +51,10 @@ jobs:
       displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(system.defaultworkingdirectory)'
+        Contents: '$(Build.SourcesDirectory)\cmake-build-linux-release/linux-detach'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
