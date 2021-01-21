@@ -18,7 +18,7 @@ jobs:
   dependsOn: []
   pool:
     vmImage: 'macOS-latest'
-  setps:
+  steps:
     - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
       displayName: Generate Make Files
     - script: cmake --build cmake-build-macos-release --target all
@@ -38,7 +38,7 @@ jobs:
   dependsOn: []
   pool:
     vmImage: 'ubuntu-16.04'
-  setps: 
+  steps: 
     - script: cmake -Bcmake-build-linux-release -H. -DCMAKE_BUILD_TYPE=release
       displayName: Generate Make Files
     - script: cmake --build cmake-build-linux-release --target all
