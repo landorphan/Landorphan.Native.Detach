@@ -28,8 +28,8 @@ jobs:
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)'
-        Contents: '$(Build.SourcesDirectory)/cmake-build-macos-release/macos-detach'
+        SourceFolder: '$(Build.SourcesDirectory)/cmake-build-macos-release'
+        Contents: 'macos-detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
@@ -52,8 +52,8 @@ jobs:
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
-        SourceFolder: '$(system.defaultworkingdirectory)'
-        Contents: '$(Build.SourcesDirectory)/cmake-build-linux-release/linux-detach'
+        SourceFolder: '$(Build.SourcesDirectory)/cmake-build-linux-release'
+        Contents: 'linux-detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
