@@ -242,3 +242,9 @@ jobs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'nuget'
         publishLocation: 'Container'    
+    - task: NuGetCommand@2
+      inputs:
+        command: 'push'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'internal'
+        publishVstsFeed: '45ce0ca0-9389-479b-bb31-8e9d8fb585b1/009f08c1-c46e-454f-8372-444287c1d732'
