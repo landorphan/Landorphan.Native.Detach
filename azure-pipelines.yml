@@ -208,9 +208,9 @@ jobs:
         artifactName: 'macos'
         downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading MacOS Binaries (from previous stage)
-    - script: '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - bash: 'mkdir $(Build.SourcesDirectory)/cmake-build-nuget-release'
       displayName: Creating Nuget Build Directory
-    - script: |
+    - bash: |
         cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
         . "$(System.ArtifactsDirectory)/version.ps1"
