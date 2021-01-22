@@ -211,13 +211,13 @@ jobs:
       displayName: Creating Nuget Build Directory
     - task: CopyFiles@2
       inputs:
-        SourceFolder: '$(System.ArtifactsDirectory)\linux'
+        SourceFolder: '$(System.ArtifactsDirectory)'
         Contents: '**'
         TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Copy Linux Binaries
     - task: CopyFiles@2
       inputs:
-        SourceFolder: '$(System.ArtifactsDirectory)\macos'
+        SourceFolder: '$(System.ArtifactsDirectory)'
         Contents: '**'
         TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Copy MacOS Binaries
