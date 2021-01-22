@@ -208,10 +208,15 @@ jobs:
         artifactName: 'macos'
         downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading MacOS Binaries (from previous stage)
-    - bash: 'mkdir $(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - script: 'mkdir $(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Creating Nuget Build Directory
-    - bash: |
-        cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.ArtifactsDirectory)'
+        Contents: '**'
+        TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+    # - bash: |
+    #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
         . "$(System.ArtifactsDirectory)/version.ps1"
         nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
