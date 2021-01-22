@@ -131,8 +131,11 @@ jobs:
           echo "\$Env:SEM_CONFIG_AWS=\"$SEM_HASHED-aws\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
           echo "\$Env:SEM_CONFIG_AZURE=\"$SEM_HASHED-azure\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
         displayName: Create PowerShell version source file
-      - publish: $(Build.ArtifactStagingDirectory)/version
-        artifact: version            
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/version'
+          ArtifactName: 'version'
+          publishLocation: 'Container'
 - job: macos_build
   displayName: MacOS Build
   dependsOn: []
@@ -143,13 +146,11 @@ jobs:
       displayName: Generate Make Files
     - script: cmake --build cmake-build-macos-release --target all
       displayName: Build Project
-    - script: mv ./cmake-build-macos-release/detach ./cmake-build-macos-release/macos-detach
-      displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)/cmake-build-macos-release'
-        Contents: 'macos-detach'
+        Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
@@ -167,13 +168,11 @@ jobs:
       displayName: Generate Make Files
     - script: cmake --build cmake-build-linux-release --target all
       displayName: Build Project
-    - script: mv ./cmake-build-linux-release/detach ./cmake-build-linux-release/linux-detach
-      displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)/cmake-build-linux-release'
-        Contents: 'linux-detach'
+        Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
