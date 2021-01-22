@@ -183,8 +183,35 @@ jobs:
 
 - job: nuget_pack
   displayName: Nuget Package
-  dependsOn: [ linux_build, macos_build ]
+  dependsOn: [ linux_build, macos_build, determine_patch ]
   pool:
     vmImage: 'windows-latest'
   steps:
-    - powershell: 'ls Env:'
+    - download: download_version
+      artifact: version
+      displayName: Downloading Version Info (from previous stage)
+    - download: download_linux
+      artifact: linux
+      displayName: Downloading Linux Binaries (from previous stage)
+    - download: download_macos
+      artifact: macos
+      displayName: Downloading MacOS Binaries (from previous stage)
+    - script: '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+      displayName: Creating Nuget Build Directory
+    - script: |
+        cp -r "$PIPELINE_WORKSPACE/download_linux" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+        cp -r "$PIPELINE_WORKSPACE/download_macos" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - powershell: |
+        . "$PIPELINE_WORKSPACE/download_version/version/ps1"
+        nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - task: CopyFiles@2
+      displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+        Contents: '*.nupkg'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'nuget'
+        publishLocation: 'Container'    
