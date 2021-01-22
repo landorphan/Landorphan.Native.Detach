@@ -16,8 +16,8 @@
     <copyright>Copyright 2021</copyright>
   </metadata>
   <files>
-    <file src="cmake-build-nuget-release\linux-detach" target="tools\linux-detach" />
-    <file src="cmake-build-nuget-release\macos-detach" target="tools\macos-detach" />
+    <file src="cmake-build-nuget-release\linux\detach" target="tools\linux-detach" />
+    <file src="cmake-build-nuget-release\macos\detach" target="tools\macos-detach" />
     <file src="Landorphan.Native.Detach.props" target="build\Landorphan.Native.Detach.props" />
   </files>
 </package>
