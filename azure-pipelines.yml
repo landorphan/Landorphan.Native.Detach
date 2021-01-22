@@ -60,3 +60,11 @@ jobs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'linux'
         publishLocation: 'Container'
+
+- job: nuget_pack
+  displayName: Nuget Package
+  dependsOn: [ linux_build, macos_build ]
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+    - powershell: 'ls Env:'

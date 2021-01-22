@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Landorphan.Native.Detach</id>
+    <version>0.9.0</version>
+    <authors>Landorphan LLC, Michael Prochaska, Timothy Stockstill</authors>
+    <owners>landorphan, mprochaska, tstockstill</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/landorphan/Landorphan.Native.Detach</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+        A native library used by Landorphan.Abstraction to execute process in a 
+        consistant manner.
+    </description>
+    <releaseNotes>First public release</releaseNotes>
+    <copyright>Copyright 2021</copyright>
+  </metadata>
+  <files>
+    <file src="cmake-build-nuget-release\linux-detach" target="tools\linux-detach" />
+    <file src="cmake-build-nuget-release\macos-detach" target="tools\macos-detach" />
+    <file src="Landorphan.Native.Detach.props" target="build\Landorphan.Native.Detach.props" />
+  </files>
+</package>
