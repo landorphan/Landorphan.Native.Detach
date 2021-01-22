@@ -13,6 +13,126 @@ variables:
   NUGET_COPYRIGHT: 'Copyright © 2019 - Landorphan, LLC.'
 
 jobs:
+- job: determine_major_minor
+  displayName: Determine Build Major/Minor Version
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+    - script: |
+        SEM_SHORT=$(cat version.txt | sed -En 's/([0-9]+\.[0-9]+).*/\1/p');
+        MONIKER="$BUILD_REPOSITORY_URI|$SEM_SHORT"
+        echo "##vso[task.setvariable variable=versionMoniker;isOutput=true;]$MONIKER"
+        echo "Moniker now set to: $MONIKER"
+      displayName: Compute Build Version Moniker
+      name: compute_moniker
+- job: determine_patch
+  displayName: Compute Build Version Patch
+  dependsOn: [ 'determine_major_minor' ]
+  variables:
+    VERSION_MONIKER: $[ dependencies.determineMajorMinor.outputs['computeMoniker.versionMoniker'] ]
+    SEM_PATCH: $[counter(variables['VERSION_MONIKER'], 0)]
+  steps:
+      - script: |
+          printenv;
+          echo "Version Moniker: $VERSION_MONIKER";
+          echo "Version Patch: $SEM_PATCH";
+        displayName: Output Version Moniker
+      - script: |
+          SEM_SHORT=$(cat version.txt | sed -En 's/([0-9]+\.[0-9]+).*/\1/p');
+          SEM_LONG="$SEM_SHORT.$SEM_PATCH";
+          echo "##vso[task.setvariable variable=SEM_PATCH]$SEM_PATCH"
+          echo "##vso[task.setvariable variable=SEM_SHORT]$SEM_SHORT"
+          echo "##vso[task.setvariable variable=SEM_LONG]$SEM_LONG"
+        displayName: Compute Short and Long Forms
+      - powershell: |
+          $Env:SEM_QUALIFIER = '-local';
+          if ($Env:BUILD_SOURCEBRANCHNAME -eq 'develop')
+          {
+            $Env:SEM_QUALIFIER = '-prerelease';
+          }
+          elseif ($Env:BUILD_SOURCEBRANCHNAME -eq 'main' -or $Env:BUILD_SOURCEBRANCHNAME -eq 'master')
+          {
+            $Env:SEM_QUALIFIER = '';
+          }
+          $Env:SEM_SHORT="$(SEM_SHORT)";
+          $Env:SEM_PATCH="$(SEM_PATCH)";
+          $Env:SEM_LONG="$(SEM_LONG)";
+          Get-ChildItem Env:
+          $Env:SEM_HASH = $Env:BUILD_SOURCEVERSION.SubString(0, 7);
+          echo "##vso[task.setvariable variable=SEM_HASH]$Env:SEM_HASH"
+          $Env:SEM_QUALIFIED="$Env:SEM_LONG$Env:SEM_QUALIFIER";
+          $Env:SEM_HASHED = "$Env:SEM_LONG$Env:SEM_QUALIFIER+$Env:SEM_HASH";
+          echo "$Env:SEM_HASHED";
+          echo "##vso[task.setvariable variable=SEM_HASHED]$Env:SEM_HASHED"
+          mkdir "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version"
+          echo "$Env:SEM_HASHED" > "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/hashed.txt";
+          echo "$Env:SEM_HASHED-debug" > "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/debug.txt";
+          echo "$Env:SEM_HASHED-release" > "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/release.txt";
+          # Create bash version source file
+          echo "export SEM_SHORT=""$Env:SEM_SHORT""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_PATCH=""$Env:SEM_PATCH""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_LONG=""$Env:SEM_LONG""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_QUALIFIER=""$Env:SEM_QUALIFIER""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_QUALIFIED=""$Env:SEM_QUALIFIED""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_HASH=""$Env:SEM_HASH""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_HASHED=""$Env:SEM_HASHED""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_CONFIG_DEBUG=""$Env:SEM_HASHED-debug""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_CONFIG_RELEASE=""$Env:SEM_HASHED-release""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_CONFIG_AWS=""$Env:SEM_HASHED-aws""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          echo "export SEM_CONFIG_AZURE=""$Env:SEM_HASHED-azure""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh";
+          # Create yaml version file
+          echo "version:" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- short: $Env:SEM_SHORT" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- patch: $Env:SEM_PATCH" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- long: $Env:SEM_LONG" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- qualifier: $Env:SEM_QUALIFIER" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- qualified: $Env:SEM_QUALIFIED" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- hash: $Env:SEM_HASH" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          echo "- hashed: $Env:SEM_HASHED" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.yaml";
+          # Create json version file
+          echo "{" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "  ""version"": { " >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""short"": ""$Env:SEM_SHORT""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""patch"": ""$Env:SEM_PATCH""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""long"": ""$Env:SEM_LONG""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""qualifier"": ""$Env:SEM_QUALIFIER""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""qualified"": ""$Env:SEM_QUALIFIED""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""hash"": ""$Env:SEM_HASH""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""hashed"": ""$Env:SEM_HASHED""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""configuration"": ""{configuration}""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""configured"": ""{configured}""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""runtime"": ""{runtime}""," >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "    ""full"": ""{full}""" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          echo "}}" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.json";
+          # Create text version file
+          echo "SEM_SHORT: $Env:SEM_SHORT" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_PATCH: $Env:SEM_PATCH" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_LONG: $Env:SEM_LONG" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_QUALIFIER: $Env:SEM_QUALIFIER" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_QUALIFIED: $Env:SEM_QUALIFIED" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_HASH: $Env:SEM_HASH" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_HASHED: $Env:SEM_HASHED" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_CONFIG_DEBUG: $Env:SEM_HASHED-debug" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_CONFIG_RELEASE: $Env:SEM_HASHED-release" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_CONFIG_AWS: $Env:SEM_HASHED-aws" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+          echo "SEM_CONFIG_AZURE: $Env:SEM_HASHED-azure" >> "$Env:BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.txt";
+        displayName: Compute Qualifier
+      - bash: |
+          . "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.sh"
+          echo "\$Env:SEM_SHORT=\"$SEM_SHORT\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_PATCH=\"$SEM_PATCH\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_LONG=\"$SEM_LONG\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_QUALIFIER=\"$SEM_QUALIFIER\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_QUALIFIED=\"$SEM_QUALIFIED\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_HASH=\"$SEM_HASH\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_HASHED=\"$SEM_HASHED\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_CONFIG_DEBUG=\"$SEM_HASHED-debug\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_CONFIG_RELEASE=\"$SEM_HASHED-release\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_CONFIG_AWS=\"$SEM_HASHED-aws\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+          echo "\$Env:SEM_CONFIG_AZURE=\"$SEM_HASHED-azure\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
+        displayName: Create PowerShell version source file
+      - publish: $(Build.ArtifactStagingDirectory)/version
+        artifact: version            
 - job: macos_build
   displayName: MacOS Build
   dependsOn: []
