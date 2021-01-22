@@ -226,6 +226,7 @@ jobs:
     # - bash: |
     #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
+        cat "$(System.ArtifactsDirectory)\version\version.ps1"
         . "$(System.ArtifactsDirectory)\version\version.ps1"
         nuget pack "$(Build.SourcesDirectory)\Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Build Nuget Package
