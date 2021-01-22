@@ -215,11 +215,14 @@ jobs:
         SourceFolder: '$(System.ArtifactsDirectory)'
         Contents: '**'
         TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+    - bash: 'ls $(System.ArtifactsDirectory)'
+      displayName: Display Downloaded Items
     # - bash: |
     #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
         . "$(System.ArtifactsDirectory)/version.ps1"
         nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+      displayName: Build Nuget Package
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
