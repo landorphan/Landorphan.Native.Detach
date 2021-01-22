@@ -228,6 +228,7 @@ jobs:
     - powershell: |
         cat "$(System.ArtifactsDirectory)\version\version.ps1"
         . "$(System.ArtifactsDirectory)\version\version.ps1"
+        ls -R "$(Build.SourcesDirectory)"
         nuget pack "$(Build.SourcesDirectory)\Landorphan.Native.Detach.nuspec" -Version $Env:SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Build Nuget Package
     - task: CopyFiles@2
