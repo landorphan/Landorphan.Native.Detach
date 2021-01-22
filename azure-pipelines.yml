@@ -131,8 +131,11 @@ jobs:
           echo "\$Env:SEM_CONFIG_AWS=\"$SEM_HASHED-aws\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
           echo "\$Env:SEM_CONFIG_AZURE=\"$SEM_HASHED-azure\"" >> "$BUILD_ARTIFACTSTAGINGDIRECTORY/version/version.ps1";
         displayName: Create PowerShell version source file
-      - publish: $(Build.ArtifactStagingDirectory)/version
-        artifact: version            
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)/version'
+          ArtifactName: 'version'
+          publishLocation: 'Container'
 - job: macos_build
   displayName: MacOS Build
   dependsOn: []
@@ -143,13 +146,11 @@ jobs:
       displayName: Generate Make Files
     - script: cmake --build cmake-build-macos-release --target all
       displayName: Build Project
-    - script: mv ./cmake-build-macos-release/detach ./cmake-build-macos-release/macos-detach
-      displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)/cmake-build-macos-release'
-        Contents: 'macos-detach'
+        Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
@@ -167,13 +168,11 @@ jobs:
       displayName: Generate Make Files
     - script: cmake --build cmake-build-linux-release --target all
       displayName: Build Project
-    - script: mv ./cmake-build-linux-release/detach ./cmake-build-linux-release/linux-detach
-      displayName: Rename detach to OS Specific name
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)/cmake-build-linux-release'
-        Contents: 'linux-detach'
+        Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
       inputs:
@@ -187,23 +186,51 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-    - download: download_version
-      artifact: version
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'version'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading Version Info (from previous stage)
-    - download: download_linux
-      artifact: linux
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'linux'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading Linux Binaries (from previous stage)
-    - download: download_macos
-      artifact: macos
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'macos'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading MacOS Binaries (from previous stage)
-    - script: '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - script: 'mkdir $(Build.SourcesDirectory)\cmake-build-nuget-release'
       displayName: Creating Nuget Build Directory
-    - script: |
-        cp -r "$PIPELINE_WORKSPACE/download_linux" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
-        cp -r "$PIPELINE_WORKSPACE/download_macos" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.ArtifactsDirectory)'
+        Contents: '**'
+        TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+      displayName: Copy Linux Binaries
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.ArtifactsDirectory)'
+        Contents: '**'
+        TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+      displayName: Copy MacOS Binaries
+    - script: 'dir $(System.ArtifactsDirectory)'
+      displayName: Display Downloaded Items
+    # - bash: |
+    #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
-        . "$PIPELINE_WORKSPACE/download_version/version/ps1"
-        nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+        cat "$(System.ArtifactsDirectory)\version\version.ps1"
+        . "$(System.ArtifactsDirectory)\version\version.ps1"
+        ls -R "$(Build.SourcesDirectory)"
+        nuget pack "$(Build.SourcesDirectory)\Landorphan.Native.Detach.nuspec" -Version $Env:SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+      displayName: Build Nuget Package
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
