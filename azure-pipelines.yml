@@ -215,7 +215,7 @@ jobs:
         SourceFolder: '$(System.ArtifactsDirectory)'
         Contents: '**'
         TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
-    - bash: 'ls $(System.ArtifactsDirectory)'
+    - script: 'dir $(System.ArtifactsDirectory)'
       displayName: Display Downloaded Items
     # - bash: |
     #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
