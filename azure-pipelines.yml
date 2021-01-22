@@ -187,22 +187,33 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-    - download: download_version
-      artifact: version
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'version'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading Version Info (from previous stage)
-    - download: download_linux
-      artifact: linux
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'linux'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading Linux Binaries (from previous stage)
-    - download: download_macos
-      artifact: macos
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'macos'
+        downloadPath: '$(System.ArtifactsDirectory)'
       displayName: Downloading MacOS Binaries (from previous stage)
     - script: '$(Build.SourcesDirectory)/cmake-build-nuget-release'
       displayName: Creating Nuget Build Directory
     - script: |
-        cp -r "$PIPELINE_WORKSPACE/download_linux" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
-        cp -r "$PIPELINE_WORKSPACE/download_macos" '$(Build.SourcesDirectory)/cmake-build-nuget-release'
+        cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
-        . "$PIPELINE_WORKSPACE/download_version/version/ps1"
+        . "$(System.ArtifactsDirectory)/version.ps1"
         nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
