@@ -212,15 +212,22 @@ jobs:
       displayName: Creating Nuget Build Directory
     - task: CopyFiles@2
       inputs:
-        SourceFolder: '$(System.ArtifactsDirectory)'
+        SourceFolder: '$(System.ArtifactsDirectory)\linux'
         Contents: '**'
         TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+      displayName: Copy Linux Binaries
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.ArtifactsDirectory)\macos'
+        Contents: '**'
+        TargetFolder: '$(Build.SourcesDirectory)\cmake-build-nuget-release'
+      displayName: Copy MacOS Binaries
     - script: 'dir $(System.ArtifactsDirectory)'
       displayName: Display Downloaded Items
     # - bash: |
     #     cp -r '$(System.ArtifactsDirectory)' '$(Build.SourcesDirectory)/cmake-build-nuget-release'
     - powershell: |
-        . "$(System.ArtifactsDirectory)/version.ps1"
+        . "$(System.ArtifactsDirectory)\version\version.ps1"
         nuget pack "$(Build.SourcesDirectory)/Landorphan.Native.Detach.nuspec" -Version $SEM_HASHED -OutputDirectory '$(Build.SourcesDirectory)/cmake-build-nuget-release'
       displayName: Build Nuget Package
     - task: CopyFiles@2
