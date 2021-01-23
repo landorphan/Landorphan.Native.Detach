@@ -142,6 +142,15 @@ jobs:
   pool:
     vmImage: 'macOS-latest'
   steps:
+    - task: AzureKeyVault@1
+      inputs:
+        azureSubscription: 'Landorphan Holdings (1286ed67-15ce-4500-899e-e79313d8329f)'
+        KeyVaultName: 'landorphan-build'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+      displayName: 'Download Key Vault Secrets'
+    - script: printenv
+      displayName: 'Print current envrionment variables'
     - task: InstallAppleCertificate@2
       inputs:
         certSecureFile: 'Landorphan_Apple_Developer_ID.p12'
