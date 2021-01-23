@@ -142,6 +142,14 @@ jobs:
   pool:
     vmImage: 'macOS-latest'
   steps:
+    - task: InstallAppleCertificate@2
+      inputs:
+        certSecureFile: 'Landorphan_Apple_Developer_ID.p12'
+        certPwd: '$(Landorphan-Apple-Developer-ID-PWD)'
+        keychain: 'temp'
+      displayName: 'Install Apple Code Signing Certificate'
+    - script: security find-identity -v -p codesigning
+      displayName: 'Display Currently Installed Code Signing Certificates'
     - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
       displayName: Generate Make Files
     - script: cmake --build cmake-build-macos-release --target all
