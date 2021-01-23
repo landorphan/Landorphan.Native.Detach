@@ -168,7 +168,7 @@ jobs:
         actions: 'build'
         configuration: 'Release'
         packageApp: false
-        sdk: macosx10.9
+        sdk: macosx11.0
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
         provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
