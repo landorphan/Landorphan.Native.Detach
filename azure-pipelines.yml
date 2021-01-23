@@ -149,20 +149,31 @@ jobs:
         SecretsFilter: '*'
         RunAsPreJob: true
       displayName: 'Download Key Vault Secrets'
-    - script: printenv
-      displayName: 'Print current envrionment variables'
     - task: InstallAppleCertificate@2
       inputs:
         certSecureFile: 'Landorphan_Apple_Developer_ID.p12'
         certPwd: '$(Landorphan-Apple-Developer-ID-PWD)'
         keychain: 'temp'
       displayName: 'Install Apple Code Signing Certificate'
+    - task: InstallAppleProvisioningProfile@1
+      inputs:
+        provisioningProfileLocation: 'secureFiles'
+        provProfileSecureFile: 'Landorphan_Native_Detach_Module_Release.provisionprofile'
     - script: security find-identity -v -p codesigning
       displayName: 'Display Currently Installed Code Signing Certificates'
-    - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
-      displayName: Generate Make Files
-    - script: cmake --build cmake-build-macos-release --target all
-      displayName: Build Project
+    - task: Xcode@5
+      inputs:
+        actions: 'build'
+        configuration: 'Release'
+        packageApp: false
+        signingOption: 'manual'
+        signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
+        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
+        destinationPlatformOption: 'macOS'
+    # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
+    #   displayName: Generate Make Files
+    # - script: cmake --build cmake-build-macos-release --target all
+    #   displayName: Build Project
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
