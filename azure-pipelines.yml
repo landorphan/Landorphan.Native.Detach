@@ -161,11 +161,14 @@ jobs:
         provProfileSecureFile: 'Landorphan_Native_Detach_Module_Release.provisionprofile'
     - script: security find-identity -v -p codesigning
       displayName: 'Display Currently Installed Code Signing Certificates'
+    - script: xcodebuild -showsdks
+      displayName: 'Show all SDKs'
     - task: Xcode@5
       inputs:
         actions: 'build'
         configuration: 'Release'
         packageApp: false
+        sdk: macosx10.9
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
         provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
