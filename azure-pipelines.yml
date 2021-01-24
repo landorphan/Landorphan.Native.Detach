@@ -180,7 +180,7 @@ jobs:
     #   displayName: Generate Make Files
     # - script: cmake --build cmake-build-macos-release --target all
     #   displayName: Build Project
-    - script: pstree '$(Build.SourcesDirectory)'
+    - script: find .
       displayName: List Build Sources Directory
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
