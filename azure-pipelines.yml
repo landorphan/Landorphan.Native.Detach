@@ -175,8 +175,9 @@ jobs:
     - script: cmake --build cmake-build-macos-release --target all
       displayName: Build Project
     - script: codesign -s '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)' -v '$(Build.SourcesDirectory)/cmake-build-macos-release/detach'
-    - script: find '$(agent.buildDirectory)/output'
-      displayName: List Build Sources Directory
+      displayName: Sign Project
+    # - script: find '$(agent.buildDirectory)/output'
+    #   displayName: List Build Sources Directory
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
