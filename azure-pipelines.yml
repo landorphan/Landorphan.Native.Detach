@@ -155,10 +155,10 @@ jobs:
         certPwd: '$(Landorphan-Apple-Developer-ID-PWD)'
         keychain: 'temp'
       displayName: 'Install Apple Code Signing Certificate'
-    - task: InstallAppleProvisioningProfile@1
-      inputs:
-        provisioningProfileLocation: 'secureFiles'
-        provProfileSecureFile: 'Landorphan_Native_Detach_Module_Release.provisionprofile'
+    # - task: InstallAppleProvisioningProfile@1
+    #   inputs:
+    #     provisioningProfileLocation: 'secureFiles'
+    #     provProfileSecureFile: 'Landorphan_Native_Detach_Module_Release.provisionprofile'
     - script: security find-identity -v -p codesigning
       displayName: 'Display Currently Installed Code Signing Certificates'
     - script: xcodebuild -showsdks
@@ -171,7 +171,7 @@ jobs:
         sdk: macosx11.0
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
-        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
+#        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
         destinationPlatformOption: 'macOS'
     # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
     #   displayName: Generate Make Files
