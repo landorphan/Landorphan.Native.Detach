@@ -171,6 +171,7 @@ jobs:
         sdk: macosx11.0
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
+        exportPath: '$(Build.SourcesDirectory)/cmake-build-macos-release'
 #        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
         destinationPlatformOption: 'macOS'
     # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
