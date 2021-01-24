@@ -163,8 +163,8 @@ jobs:
       displayName: 'Display Currently Installed Code Signing Certificates'
     - script: xcodebuild -showsdks
       displayName: 'Show all SDKs'
-    - script: mkdir '$(Build.SourcesDirectory)/cmake-build-macos-release'
-      displayName: 'Make cMake directory'
+    # - script: mkdir '$(Build.SourcesDirectory)/cmake-build-macos-release'
+    #   displayName: 'Make cMake directory'
     - task: Xcode@5
       inputs:
         actions: 'build'
@@ -173,7 +173,7 @@ jobs:
         sdk: macosx11.0
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
-        exportPath: '$(Build.SourcesDirectory)/cmake-build-macos-release'
+        exportPath: '$(agent.buildDirectory)/output/$(sdk)/$(configuration)'
 #        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
         destinationPlatformOption: 'macOS'
     # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
@@ -185,7 +185,7 @@ jobs:
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/cmake-build-macos-release'
+        SourceFolder: '$(agent.buildDirectory)/output/$(sdk)/$(configuration)'
         Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
