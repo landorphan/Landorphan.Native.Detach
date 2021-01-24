@@ -155,37 +155,32 @@ jobs:
         certPwd: '$(Landorphan-Apple-Developer-ID-PWD)'
         keychain: 'temp'
       displayName: 'Install Apple Code Signing Certificate'
-    # - task: InstallAppleProvisioningProfile@1
-    #   inputs:
-    #     provisioningProfileLocation: 'secureFiles'
-    #     provProfileSecureFile: 'Landorphan_Native_Detach_Module_Release.provisionprofile'
     - script: security find-identity -v -p codesigning
       displayName: 'Display Currently Installed Code Signing Certificates'
-    - script: xcodebuild -showsdks
-      displayName: 'Show all SDKs'
-    # - script: mkdir '$(Build.SourcesDirectory)/cmake-build-macos-release'
-    #   displayName: 'Make cMake directory'
-    - task: Xcode@5
-      inputs:
-        actions: 'build'
-        configuration: 'Release'
-        packageApp: false
-        sdk: macosx11.0
-        signingOption: 'manual'
-        signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
-        exportPath: '$(agent.buildDirectory)/output/macosx11.0/Release'
-#        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
-        destinationPlatformOption: 'macOS'
-    # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
-    #   displayName: Generate Make Files
-    # - script: cmake --build cmake-build-macos-release --target all
-    #   displayName: Build Project
+    - script: mkdir '$(Build.SourcesDirectory)/cmake-build-macos-release'
+      displayName: 'Make cMake directory'
+#     - task: Xcode@5
+#       inputs:
+#         actions: 'build'
+#         configuration: 'Release'
+#         packageApp: false
+#         sdk: macosx11.0
+#         signingOption: 'manual'
+#         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
+#         exportPath: '$(agent.buildDirectory)/output/macosx11.0/Release'
+# #        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
+#         destinationPlatformOption: 'macOS'
+    - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
+      displayName: Generate Make Files
+    - script: cmake --build cmake-build-macos-release --target all
+      displayName: Build Project
+    - script: codesign -s '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)' -v '$(Build.SourcesDirectory)/cmake-build-macos-release/detach'
     - script: find '$(agent.buildDirectory)/output'
       displayName: List Build Sources Directory
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
-        SourceFolder: '$(agent.buildDirectory)/output/macosx11.0/Release'
+        SourceFolder: '$(Build.SourcesDirectory)/cmake-build-macos-release'
         Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
