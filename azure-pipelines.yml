@@ -173,19 +173,19 @@ jobs:
         sdk: macosx11.0
         signingOption: 'manual'
         signingIdentity: '$(APPLE_CERTIFICATE_SIGNING_IDENTITY)'
-        exportPath: '$(agent.buildDirectory)/output/$(sdk)/$(configuration)'
+        exportPath: '$(agent.buildDirectory)/output/macosx11.0/Release'
 #        provisioningProfileUuid: '$(APPLE_PROV_PROFILE_UUID)'
         destinationPlatformOption: 'macOS'
     # - script: cmake -Bcmake-build-macos-release -H. -DCMAKE_BUILD_TYPE=release
     #   displayName: Generate Make Files
     # - script: cmake --build cmake-build-macos-release --target all
     #   displayName: Build Project
-    - script: find .
+    - script: find '$(agent.buildDirectory)/output'
       displayName: List Build Sources Directory
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
-        SourceFolder: '$(agent.buildDirectory)/output/$(sdk)/$(configuration)'
+        SourceFolder: '$(agent.buildDirectory)/output/macosx11.0/Release'
         Contents: 'detach'
         TargetFolder: '$(Build.ArtifactStagingDirectory)'
     - task: PublishBuildArtifacts@1
