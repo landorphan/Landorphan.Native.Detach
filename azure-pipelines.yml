@@ -163,6 +163,8 @@ jobs:
       displayName: 'Display Currently Installed Code Signing Certificates'
     - script: xcodebuild -showsdks
       displayName: 'Show all SDKs'
+    - script: mkdir '$(Build.SourcesDirectory)/cmake-build-macos-release'
+      displayName: 'Make cMake directory'
     - task: Xcode@5
       inputs:
         actions: 'build'
@@ -178,6 +180,8 @@ jobs:
     #   displayName: Generate Make Files
     # - script: cmake --build cmake-build-macos-release --target all
     #   displayName: Build Project
+    - script: pstree '$(Build.SourcesDirectory)'
+      displayName: List Build Sources Directory
     - task: CopyFiles@2
       displayName: 'Move Files to Staging Directory: $(Build.ArtifactStagingDirectory)'
       inputs:
