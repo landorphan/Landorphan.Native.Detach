@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     int execvStart = 1;
     int execvSize = argc;
-
+    
     // Argv[1] could be the command channel.  If so, then we start params
     // with argv[2].
 
@@ -215,13 +215,13 @@ int main(int argc, char** argv) {
         errExit(&descriptors, 1, errno, "Unable to exec process");
     } else {
         // PARENT FORK
-        int status = 0;
-        // wait for the forked (created) process to complete.
-        waitpid(pid, &status, 0);
-        // close and exit successfully.
-        if (descriptors.command >= 0) {
-            dprintf(descriptors.command, "%d\n", WEXITSTATUS(status));
-        }
+//        int status = 0;
+//        // wait for the forked (created) process to complete.
+//        waitpid(pid, &status, 0);
+//        // close and exit successfully.
+//        if (descriptors.command >= 0) {
+//            dprintf(descriptors.command, "%d\n", WEXITSTATUS(status));
+//        }
 
         closeAndExit(&descriptors);
     }
